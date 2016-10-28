@@ -7,9 +7,12 @@ require 'open-uri'
 require 'archive/zip'
 
 module Chromedriver
-  class Helper
+  def self.root
+    File.dirname __dir__
+  end
 
-    def run *args
+  class Helper
+    def run(*args)
       download
       exec binary_path, *args
     end
@@ -36,8 +39,13 @@ module Chromedriver
       File.open(version_path, 'w') { |file| file.write(download_version) }
     end
 
-    def update
-      download true
+    def update(version = nil)
+      if version
+        @download_version = version
+      end
+
+      hit_network = (current_version != download_version) ? true : false
+      download(hit_network)
     end
 
     def current_version
@@ -45,7 +53,7 @@ module Chromedriver
     end
 
     def download_version
-      @version ||= Chromedriver.configuration.version || google_code_parser.newest_download_version
+      @download_version ||= current_version || google_code_parser.newest_download_version
     end
 
     def download_url
@@ -75,7 +83,9 @@ module Chromedriver
     end
 
     def install_dir
-      dir = File.expand_path File.join(ENV['HOME'], ".chromedriver-helper")
+      base_path = File.expand_path("..", Chromedriver.root)
+      path = File.join(base_path, "/bin", ".chromedriver-execute")
+      dir = File.expand_path(path)
       FileUtils.mkdir_p dir
       dir
     end
@@ -89,6 +99,5 @@ module Chromedriver
       else "win"
       end
     end
-
   end
 end
