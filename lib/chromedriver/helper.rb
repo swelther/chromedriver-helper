@@ -68,7 +68,7 @@ module Chromedriver
     end
 
     def version_path
-      @version_path ||= File.join(File.expand_path("..", Chromedriver.root), ".chromedriver-version")
+      @version_path ||= File.join(ENV['HOME'], ".chromedriver-version")
     end
 
     def binary_path
